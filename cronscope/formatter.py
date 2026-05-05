@@ -1,55 +1,54 @@
 """Terminal formatting helpers for cronscope output."""
 
-from datetime import datetime
 from typing import List
+from datetime import datetime
 
-TIMESTAMP_FMT = "%Y-%m-%d %H:%M"
-
-# ANSI colour helpers
-_RESET = "\033[0m"
-_BOLD = "\033[1m"
-_GREEN = "\033[32m"
-_CYAN = "\033[36m"
-_YELLOW = "\033[33m"
+COLOR_RESET = "\033[0m"
+COLOR_GREEN = "\033[32m"
+COLOR_YELLOW = "\033[33m"
+COLOR_CYAN = "\033[36m"
+COLOR_RED = "\033[31m"
+COLOR_BOLD = "\033[1m"
 
 
-def _c(text: str, *codes: str) -> str:
-    return "".join(codes) + text + _RESET
+def _c(text: str, color: str, use_color: bool = True) -> str:
+    """Wrap text in ANSI color codes if use_color is True."""
+    if not use_color:
+        return text
+    return f"{color}{text}{COLOR_RESET}"
 
 
 def format_next_runs(
     expression: str,
     runs: List[datetime],
-    *,
-    color: bool = True,
+    use_color: bool = True,
+    explanation: str = None,
 ) -> str:
-    """Return a formatted string listing upcoming run times."""
-    lines: List[str] = []
-
-    header = f"Upcoming runs for: {expression}"
-    if color:
-        header = _c(header, _BOLD, _CYAN)
+    """Format a list of next-run datetimes for terminal display."""
+    lines = []
+    header = _c(f"Cron expression: ", COLOR_BOLD, use_color) + \
+             _c(expression, COLOR_CYAN, use_color)
     lines.append(header)
-    lines.append("-" * 40)
+
+    if explanation:
+        lines.append(_c(explanation, COLOR_YELLOW, use_color))
+
+    lines.append(_c(f"Next {len(runs)} run(s):", COLOR_BOLD, use_color))
 
     for i, dt in enumerate(runs, start=1):
-        timestamp = dt.strftime(TIMESTAMP_FMT)
-        label = f"  {i:>2}. {timestamp}"
-        if color:
-            label = _c(f"  {i:>2}.", _YELLOW) + " " + _c(timestamp, _GREEN)
-        lines.append(label)
-
-    if not runs:
-        msg = "  (no upcoming runs found)"
-        lines.append(_c(msg, _YELLOW) if color else msg)
+        formatted_dt = dt.strftime("%Y-%m-%d %H:%M")
+        line = f"  {_c(str(i).rjust(2), COLOR_YELLOW, use_color)}. " \
+               f"{_c(formatted_dt, COLOR_GREEN, use_color)}"
+        lines.append(line)
 
     return "\n".join(lines)
 
 
-def format_validation_error(expression: str, error: str, *, color: bool = True) -> str:
-    """Return a formatted error message for an invalid expression."""
-    prefix = "[ERROR]"
-    msg = f"{prefix} Invalid cron expression '{expression}': {error}"
-    if color:
-        msg = _c(msg, "\033[31m")  # red
-    return msg
+def format_validation_error(expression: str, error: str, use_color: bool = True) -> str:
+    """Format a validation error message for terminal display."""
+    lines = [
+        _c("Invalid cron expression:", COLOR_RED, use_color) +
+        f" {_c(expression, COLOR_BOLD, use_color)}",
+        _c(f"Error: {error}", COLOR_RED, use_color),
+    ]
+    return "\n".join(lines)
