@@ -52,3 +52,17 @@ def format_validation_error(expression: str, error: str, use_color: bool = True)
         _c(f"Error: {error}", COLOR_RED, use_color),
     ]
     return "\n".join(lines)
+
+
+def format_no_runs(expression: str, use_color: bool = True) -> str:
+    """Format a message indicating no upcoming runs were found for the expression.
+
+    This can occur when a cron expression is valid but matches no future dates
+    within the searched range (e.g., a past-only date constraint).
+    """
+    lines = [
+        _c(f"Cron expression: ", COLOR_BOLD, use_color) +
+        _c(expression, COLOR_CYAN, use_color),
+        _c("No upcoming runs found for this expression.", COLOR_YELLOW, use_color),
+    ]
+    return "\n".join(lines)
