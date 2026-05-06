@@ -59,3 +59,19 @@ def test_step_expression():
     assert 15 in minutes or 0 in minutes  # multiples of 15
     for r in runs:
         assert r.minute % 15 == 0
+
+
+def test_next_runs_count_matches_requested():
+    """next_runs(n) should always return exactly n datetimes."""
+    for n in (1, 5, 10):
+        runs = _sched("* * * * *").next_runs(n)
+        assert len(runs) == n, f"Expected {n} runs, got {len(runs)}"
+
+
+def test_runs_are_strictly_increasing():
+    """Each successive run must be later than the previous one."""
+    runs = _sched("*/5 * * * *").next_runs(6)
+    for i in range(1, len(runs)):
+        assert runs[i] > runs[i - 1], (
+            f"Run {i} ({runs[i]}) is not after run {i-1} ({runs[i-1]})"
+        )
