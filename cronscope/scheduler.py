@@ -47,3 +47,12 @@ class CronScheduler:
             if self._matches(candidate):
                 yield candidate
             candidate += timedelta(minutes=1)
+
+    def next_run(self) -> datetime | None:
+        """Return the single next run datetime after base_time, or None if not found.
+
+        Convenience wrapper around :meth:`next_runs` for callers that only need
+        the immediately upcoming scheduled time.
+        """
+        runs = self.next_runs(count=1)
+        return runs[0] if runs else None
