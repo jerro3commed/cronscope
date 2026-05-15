@@ -44,6 +44,18 @@ class CadenceResult:
             return True
         return max(self.intervals_seconds) - min(self.intervals_seconds) < 1.0
 
+    @property
+    def longest_gap(self) -> Optional[tuple[timedelta, int]]:
+        """Return the longest interval and its index, or None if no intervals exist.
+
+        The index refers to the position in *intervals_seconds* where the gap occurs,
+        which corresponds to the gap between run ``index`` and run ``index + 1``.
+        """
+        if not self.intervals_seconds:
+            return None
+        idx = max(range(len(self.intervals_seconds)), key=lambda i: self.intervals_seconds[i])
+        return timedelta(seconds=self.intervals_seconds[idx]), idx
+
 
 def analyze_cadence(
     expression: str,
