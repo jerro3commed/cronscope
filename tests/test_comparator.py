@@ -75,3 +75,11 @@ def test_total_unique_property():
     result = compare("0 8 * * *", "0 9 * * *", count=3, start=START)
     assert not result.has_errors
     assert result.total_unique == result.overlap_count * 0 + len(result.only_left) + len(result.only_right)
+
+
+def test_total_unique_includes_shared_and_exclusive_runs():
+    """total_unique should count shared runs plus runs exclusive to each side."""
+    result = compare("0 8 * * *", "0 8 * * *", count=3, start=START)
+    assert not result.has_errors
+    # When both schedules are identical, total_unique equals the number of shared runs
+    assert result.total_unique == result.overlap_count
